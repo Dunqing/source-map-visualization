@@ -14,7 +14,7 @@ watch(generatedCode, (code) => {
 
 const monacoRef = shallowRef<HTMLDivElement>()
 if (process.client) {
-  const monaco = await import('monaco-editor/esm/vs/editor/editor.api')
+  const monaco = await import('monaco-editor')
   const { editor, languages } = monaco
   languages.register({
     id: 'typescript',
