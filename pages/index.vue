@@ -7,10 +7,6 @@ const sourceMapRE = /\/\/#\s*sourceMappingURL=.*\n?/g
 
 const generatedCode = useLocalStorage('source-map-visualization-generated-code', '')
 const sourcemapCode = useLocalStorage('source-map-visualization-sourcemap', '')
-watch(generatedCode, (code) => {
-  if (sourceMapRE.test(code))
-    sourcemapCode.value = code.match(sourceMapRE)?.[0] || ''
-})
 
 const monacoRef = shallowRef<HTMLDivElement>()
 if (process.client) {
@@ -39,6 +35,9 @@ if (process.client) {
   })
   model.onDidChangeContent((code) => {
     generatedCode.value = code.changes[0].text
+    const sourcemap = generatedCode.value.match(sourceMapRE)?.[0]
+    if (sourcemap)
+      sourcemapCode.value = sourcemap
   })
 }
 const sourcemap = computed(() => {
@@ -47,11 +46,11 @@ const sourcemap = computed(() => {
 
 const shiki = await getHighlighter({
   themes: ['github-light'],
-  langs: ['javascript', 'typescript'],
+  langs: ['typescript'],
 })
 
-function codeToHtml(filename: string, code: string) {
-  return shiki.codeToHtml(code, { lang: filename.endsWith('.ts') ? 'typescript' : 'javascript', theme: 'github-light' })
+function codeToHtml(code: string) {
+  return shiki.codeToHtml(code || '', { lang: 'typescript', theme: 'github-light' }) || ''
 }
 </script>
 
@@ -69,7 +68,7 @@ function codeToHtml(filename: string, code: string) {
               <p border-b-1 text-blue-600>
                 {{ sourcemap.sources[i - 1] }}
               </p>
-              <div w-full overflow-x-scroll py-2 v-html="codeToHtml(sourcemap.sources[i - 1], sourcemap.sourcesContent[i - 1])" />
+              <div w-full overflow-x-scroll py-2 v-html="codeToHtml(sourcemap.sourcesContent[i - 1])" />
             </div>
           </div>
         </div>
